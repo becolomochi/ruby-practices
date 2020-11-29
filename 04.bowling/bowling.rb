@@ -4,11 +4,11 @@ score = ARGV[0]
 scores = score.chars
 shots = []
 scores.each do |s|
-  if s == 'X'
-    shots << 10
-  else
-    shots << s.to_i
-  end
+  shots << if s == 'X'
+             10
+           else
+             s.to_i
+           end
 end
 
 # フレームごとに分ける
