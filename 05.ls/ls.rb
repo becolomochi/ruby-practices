@@ -79,32 +79,28 @@ def convert_permission(mode)
 end
 
 # lオプションのファイル一覧を取得
-file_detail_list = []
 if params[:l]
   # フルパスの取得
   path = Dir.getwd
 
+  file_detail_list = []
   file_list.each do |f|
-    file_detail = {}
     fs = File::Stat.new("#{path}/#{f}")
 
-    # p fs.mode
-    file_detail[:permission] = convert_filetype(fs.ftype) + convert_permission(fs.mode)
-    file_detail[:nlink] = fs.nlink
-    file_detail[:uid] = Etc.getpwuid(fs.uid).name
-    file_detail[:gid] = Etc.getgrgid(fs.gid).name
-    file_detail[:size] = fs.size
-    file_detail[:month] = fs.mtime.month
-    file_detail[:day] = fs.mtime.day
-    if fs.mtime.year == Time.now.year
-      file_detail[:time] = fs.mtime.hour.to_s + ':' + fs.mtime.min.to_s
-    else
-      file_detail[:year] = fs.mtime.year
-    end
-    file_detail[:name] = f
+    file_detail = {
+        permission: convert_filetype(fs.ftype) + convert_permission(fs.mode),
+        nlink: fs.nlink,
+        uid: Etc.getpwuid(fs.uid).name,
+        gid: Etc.getgrgid(fs.gid).name,
+        size: fs.size,
+        month: fs.mtime.month,
+        day: fs.mtime.day,
+        time: fs.mtime.hour.to_s + ':' + fs.mtime.min.to_s,
+        year: fs.mtime.year,
+        name: f
+    }
+
     file_detail_list << file_detail
-    # f << fs.mode
-    # f << f
   end
 end
 
