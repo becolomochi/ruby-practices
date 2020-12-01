@@ -4,6 +4,7 @@
 require 'optparse'
 require 'etc'
 
+# ターミナルから値を得る
 opt = OptionParser.new
 params = {}
 opt.on('-a') {|v| params[:a] = v }
@@ -18,16 +19,20 @@ opt.parse!(ARGV)
 # puts 'オプション'
 # p params
 
+# ディレクトリを決める
 directory = ARGV[0] || '.'
 Dir.chdir(directory)
 
+# ファイルの一覧を得る
 file_list = if params[:a]
               Dir.glob("*", File::FNM_DOTMATCH)
             else
               Dir.glob("*")
             end.sort
 
+# rオプションがあるなら逆順にする
 file_list = file_list.reverse if params[:r]
+
 
 # ftype からファイルタイプを変換
 def convert_filetype(ftype)
@@ -73,7 +78,7 @@ def convert_permission(mode)
   end.join
 end
 
-
+# lオプションのファイル一覧を取得
 file_detail_list = []
 if params[:l]
   # フルパスの取得
@@ -103,6 +108,7 @@ if params[:l]
   end
 end
 
+# 出力
 if params[:l]
   puts "total "
   file_detail_list.each do |item|
