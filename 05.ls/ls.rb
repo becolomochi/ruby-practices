@@ -3,6 +3,7 @@
 
 require 'optparse'
 require 'etc'
+require 'Date'
 
 # ターミナルから値を得る
 opt = OptionParser.new
@@ -33,111 +34,133 @@ file_list = if params[:a]
 # rオプションがあるなら逆順にする
 file_list = file_list.reverse if params[:r]
 
+# Fileクラスを定義
+class File
+  attr_reader :name, :type, :mode, :nlink, :user_name, :group_name, :size, :updated_time
 
-# ftype からファイルタイプを変換
-def convert_filetype(ftype)
-  case ftype
-  when 'file'
-    '-'
-  when 'directory'
-    'd'
-  when 'characterSpecial'
-    'c'
-  when 'blockSpecial'
-    'b'
-  when 'fifo'
-    'p'
-  when 'link'
-    'l'
-  when 'socket'
-    's'
-  when 'unknown'
-    '?'
+  def initialize(name, type, mode, nlink, user_name, group_name, size, updated_time)
+    @name = name
+    @type = type
+    @mode = mode
+    @nlink = nlink
+    @user_name = user_name
+    @group_name = group_name
+    @size = size
+    @updated_time = updated_time
+  end
+
+  # ftype からファイルタイプを変換
+  def type_alphabet
+    case type
+    when 'file'
+      '-'
+    when 'directory'
+      'd'
+    when 'characterSpecial'
+      'c'
+    when 'blockSpecial'
+      'b'
+    when 'fifo'
+      'p'
+    when 'link'
+      'l'
+    when 'socket'
+      's'
+    when 'unknown'
+      '?'
+    end
+  end
+
+  # mode からパーミッションを変換
+  def permission
+    mode.to_s(8)[-3..-1].chars.map do |x|
+      case x
+      when '7'
+        'rwx'
+      when '6'
+        'rw-'
+      when '5'
+        'r-x'
+      when '4'
+        'r--'
+      when '2'
+        '-w-'
+      when '1'
+        '--x'
+      else
+        '---'
+      end
+    end.join
+  end
+
+  def date
+    if updated_time.year == Date.today
+      updated_time.strftime("%b %d %Y")
+    else
+      updated_time.strftime("%b %d %H:%M")
+    end
   end
 end
 
-# mode からパーミッションを変換
-def convert_permission(mode)
-  mode.to_s(8)[-3..-1].chars.map do |x|
-    case x
-    when '7'
-      'rwx'
-    when '6'
-      'rw-'
-    when '5'
-      'r-x'
-    when '4'
-      'r--'
-    when '2'
-      '-w-'
-    when '1'
-      '--x'
-    else
-      '---'
-    end
-  end.join
+# ファイルのデータを作成する
+files = []
+file_list.each do |f|
+  fs = File::Stat.new(Dir.getwd + '/' + f)
+  name = f
+  type = fs.ftype
+  mode = fs.mode
+  nlink = fs.nlink
+  user_name = Etc.getpwuid(fs.uid).name
+  group_name = Etc.getgrgid(fs.gid).name
+  size = fs.size
+  updated_time = fs.mtime
+  files << File.new(name, type, mode, nlink, user_name, group_name, size, updated_time)
 end
 
-# lオプションのファイル一覧を取得
+# p files
 if params[:l]
-  # フルパスの取得
-  path = Dir.getwd
+  block_total = 0
+  # TODO: 割当ブロック数の合計を計算
+  puts "total #{block_total}"
+end
 
-  file_detail_list = []
-  file_list.each do |f|
-    fs = File::Stat.new("#{path}/#{f}")
-
-    file_detail = {
-        permission: convert_filetype(fs.ftype) + convert_permission(fs.mode),
-        nlink: fs.nlink,
-        uid: Etc.getpwuid(fs.uid).name,
-        gid: Etc.getgrgid(fs.gid).name,
-        size: fs.size,
-        month: fs.mtime.month,
-        day: fs.mtime.day,
-        time: fs.mtime.hour.to_s + ':' + fs.mtime.min.to_s,
-        year: fs.mtime.year,
-        name: f
-    }
-
-    file_detail_list << file_detail
+# ファイルを出力
+files.each do |file|
+  if params[:l]
+    puts "#{file.type_alphabet}#{file.permission} #{file.nlink} #{file.user_name} #{file.group_name} #{file.size} #{file.date} #{file.name}"
+  else
+    # TODO: 3カラム表示
+    puts "#{file.name}"
   end
 end
 
 # 出力
-if params[:l]
-  puts "total "
-  file_detail_list.each do |item|
-    puts item.values.join(" ")
-  end
-else
-  # 最大文字数からカラム幅を決める
-  col_size = 0
-  file_list.each do |n|
-    if col_size < n.size
-      col_size = n.size
-    end
-  end
-
-  col1 = if file_list.size == 3
-           file_list.shift(1)
-         else
-           file_list.shift(file_list.size / 3 + 1)
-         end
-  col2 = if file_list.size.even?
-           file_list.shift(file_list.size / 2)
-         else
-           file_list.shift(file_list.size / 2 + 1)
-         end
-  col3 = file_list
-  items = [col1, col2, col3]
-
-  row = col1.size
-  (0..row).each do |j|
-    col = ''
-    items.each_with_index do |item, i|
-      col += items[i][j]&.ljust(col_size + 1) || ''
-    end
-    puts col
-  end
-end
+#   最大文字数からカラム幅を決める
+  # col_size = 0
+  # files.each do |n|
+  #   if col_size < n.size
+  #     col_size = n.size
+  #   end
+  # end
+  #
+  # col1 = if files.size == 3
+  #          files.shift(1)
+  #        else
+  #          files.shift(files.size / 3 + 1)
+  #        end
+  # col2 = if files.size.even?
+  #          files.shift(files.size / 2)
+  #        else
+  #          files.shift(files.size / 2 + 1)
+  #        end
+  # col3 = files
+  # items = [col1, col2, col3]
+  #
+  # row = col1.size
+  # (0..row).each do |j|
+  #   col = ''
+  #   items.each_with_index do |item, i|
+  #     col += items[i][j]&.ljust(col_size + 1) || ''
+  #   end
+  #   puts col
+  # end
