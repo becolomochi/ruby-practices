@@ -51,7 +51,7 @@ class File
   end
 
   # ftype からファイルタイプを変換
-  def type_alphabet
+  def type_short
     case type
     when 'file'
       '-'
@@ -94,6 +94,10 @@ class File
     end.join
   end
 
+  def type_and_permission
+    self.type_short + self.permission
+  end
+
   def date
     if updated_time.year == Date.today
       updated_time.strftime("%b %d %Y")
@@ -131,7 +135,7 @@ end
 # ファイルを出力
 files.each do |file|
   if params[:l]
-    puts "#{file.type_alphabet}#{file.permission} #{file.nlink} #{file.user_name} #{file.group_name} #{file.size} #{file.date} #{file.name}"
+    puts "#{file.type_and_permission} #{file.nlink} #{file.user_name} #{file.group_name} #{file.size} #{file.date} #{file.name}"
   else
     # TODO: 3カラム表示
     puts "#{file.name}"
