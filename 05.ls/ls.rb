@@ -103,9 +103,9 @@ end
 
 # ファイルのデータを作成する
 files = []
-file_list.each do |f|
-  fs = File::Stat.new(Dir.getwd + '/' + f)
-  name = f
+file_list.each do |file|
+  fs = File::Stat.new(file)
+  name = file
   type = fs.ftype
   mode = fs.mode
   nlink = fs.nlink
