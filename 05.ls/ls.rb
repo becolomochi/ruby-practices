@@ -94,8 +94,7 @@ class File
 end
 
 # ファイルのデータを作成する
-files = []
-file_list.each do |file|
+files = file_list.map do |file|
   fs = File::Stat.new(file)
   name = file
   type = fs.ftype
@@ -106,31 +105,20 @@ file_list.each do |file|
   size = fs.size
   updated_time = fs.mtime
   blocks = fs.blocks
-  files << File.new(name, type, mode, nlink, user_name, group_name, size, updated_time, blocks)
+  File.new(name, type, mode, nlink, user_name, group_name, size, updated_time, blocks)
 end
 
 # lオプション指定時はファイルのブロック数の合計を表示
 if params[:l]
-  total_blocks = 0
-  files.each do |file|
-    total_blocks += file.blocks
-  end
+  total_blocks = files.inject(0) { |sum, file| sum + file.blocks }
   puts "total #{total_blocks}"
 end
 
 unless params[:l]
-  # ファイル名の最大文字数からカラム幅を決める
-  col_size = 0
-  files.each do |file|
-    if col_size < file.name.size
-      col_size = file.name.size
-    end
-  end
   # ファイル名だけの配列を返す
-  array_file_name = []
-  files.each do |file|
-    array_file_name << file.name
-  end
+  array_file_name = files.map(&:name)
+  # ファイル名の最大文字数
+  max_file_name_length = array_file_name.map(&:length).max
 end
 
 # ファイルを出力
@@ -156,7 +144,7 @@ else
   (0...col1.size).each do |j|
     col = ''
     (0...3).each do |i|
-      col += cols[i][j]&.ljust(col_size + 1) || ''
+      col += cols[i][j]&.ljust(max_file_name_length + 1) || ''
     end
     puts col
   end
