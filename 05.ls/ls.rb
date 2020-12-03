@@ -8,17 +8,11 @@ require 'date'
 # ターミナルから値を得る
 opt = OptionParser.new
 params = {}
-opt.on('-a') {|v| params[:a] = v }
-opt.on('-l') {|v| params[:l] = v }
-opt.on('-r') {|v| params[:r] = v }
+opt.on('-a') { |v| params[:a] = v }
+opt.on('-l') { |v| params[:l] = v }
+opt.on('-r') { |v| params[:r] = v }
 # 値を取り出す
 opt.parse!(ARGV)
-
-# 確認
-# puts 'ディレクトリ'
-# p ARGV[0]
-# puts 'オプション'
-# p params
 
 # ディレクトリを決める
 directory = ARGV[0] || '.'
@@ -123,7 +117,7 @@ file_list.each do |f|
   files << File.new(name, type, mode, nlink, user_name, group_name, size, updated_time, blocks)
 end
 
-# p files
+# lオプション指定時はファイルのブロック数の合計を表示
 if params[:l]
   total_blocks = 0
   files.each do |file|
@@ -132,18 +126,19 @@ if params[:l]
   puts "total #{total_blocks}"
 end
 
-# ファイル名の最大文字数からカラム幅を決める
-col_size = 0
-files.each do |file|
-  if col_size < file.name.size
-    col_size = file.name.size
+unless params[:l]
+  # ファイル名の最大文字数からカラム幅を決める
+  col_size = 0
+  files.each do |file|
+    if col_size < file.name.size
+      col_size = file.name.size
+    end
   end
-end
-
-# ファイル名だけの配列を返す
-array_file_name = []
-files.each do |file|
-  array_file_name << file.name
+  # ファイル名だけの配列を返す
+  array_file_name = []
+  files.each do |file|
+    array_file_name << file.name
+  end
 end
 
 # ファイルを出力
