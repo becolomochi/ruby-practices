@@ -36,9 +36,9 @@ file_list = file_list.reverse if params[:r]
 
 # Fileクラスを定義
 class File
-  attr_reader :name, :type, :mode, :nlink, :user_name, :group_name, :size, :updated_time
+  attr_reader :name, :type, :mode, :nlink, :user_name, :group_name, :size, :updated_time, :blocks
 
-  def initialize(name, type, mode, nlink, user_name, group_name, size, updated_time)
+  def initialize(name, type, mode, nlink, user_name, group_name, size, updated_time, blocks)
     @name = name
     @type = type
     @mode = mode
@@ -47,6 +47,7 @@ class File
     @group_name = group_name
     @size = size
     @updated_time = updated_time
+    @blocks = blocks
   end
 
   # ftype からファイルタイプを変換
@@ -114,14 +115,17 @@ file_list.each do |f|
   group_name = Etc.getgrgid(fs.gid).name
   size = fs.size
   updated_time = fs.mtime
-  files << File.new(name, type, mode, nlink, user_name, group_name, size, updated_time)
+  blocks = fs.blocks
+  files << File.new(name, type, mode, nlink, user_name, group_name, size, updated_time, blocks)
 end
 
 # p files
 if params[:l]
-  block_total = 0
-  # TODO: 割当ブロック数の合計を計算
-  puts "total #{block_total}"
+  total_blocks = 0
+  files.each do |file|
+    total_blocks += file.blocks
+  end
+  puts "total #{total_blocks}"
 end
 
 # ファイルを出力
