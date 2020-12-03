@@ -20,9 +20,9 @@ Dir.chdir(directory)
 
 # ファイルの一覧を得る
 file_list = if params[:a]
-              Dir.glob("*", File::FNM_DOTMATCH)
+              Dir.glob('*', File::FNM_DOTMATCH)
             else
-              Dir.glob("*")
+              Dir.glob('*')
             end.sort
 
 # rオプションがあるなら逆順にする
@@ -94,9 +94,9 @@ class File
 
   def date
     if updated_time.year == Date.today
-      updated_time.strftime("%b %d %Y")
+      updated_time.strftime('%b %d %Y')
     else
-      updated_time.strftime("%b %d %H:%M")
+      updated_time.strftime('%b %d %H:%M')
     end
   end
 end
