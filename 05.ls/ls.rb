@@ -132,43 +132,46 @@ if params[:l]
   puts "total #{total_blocks}"
 end
 
-# ファイルを出力
+# ファイル名の最大文字数からカラム幅を決める
+col_size = 0
 files.each do |file|
-  if params[:l]
-    puts "#{file.type_and_permission} #{file.nlink} #{file.user_name} #{file.group_name} #{file.size} #{file.date} #{file.name}"
-  else
-    # TODO: 3カラム表示
-    puts "#{file.name}"
+  if col_size < file.name.size
+    col_size = file.name.size
   end
 end
 
-# 出力
-#   最大文字数からカラム幅を決める
-  # col_size = 0
-  # files.each do |n|
-  #   if col_size < n.size
-  #     col_size = n.size
-  #   end
-  # end
-  #
-  # col1 = if files.size == 3
-  #          files.shift(1)
-  #        else
-  #          files.shift(files.size / 3 + 1)
-  #        end
-  # col2 = if files.size.even?
-  #          files.shift(files.size / 2)
-  #        else
-  #          files.shift(files.size / 2 + 1)
-  #        end
-  # col3 = files
-  # items = [col1, col2, col3]
-  #
-  # row = col1.size
-  # (0..row).each do |j|
-  #   col = ''
-  #   items.each_with_index do |item, i|
-  #     col += items[i][j]&.ljust(col_size + 1) || ''
-  #   end
-  #   puts col
-  # end
+# ファイル名だけの配列を返す
+array_file_name = []
+files.each do |file|
+  array_file_name << file.name
+end
+
+# ファイルを出力
+if params[:l]
+  files.each do |file|
+    puts "#{file.type_and_permission} #{file.nlink} #{file.user_name} #{file.group_name} #{file.size} #{file.date} #{file.name}"
+  end
+else
+  # 3カラム表示
+  col1 = if array_file_name.size == 3
+           array_file_name.shift(1)
+         else
+           array_file_name.shift(array_file_name.size / 3 + 1)
+         end
+  col2 = if array_file_name.size.even?
+           array_file_name.shift(array_file_name.size / 2)
+         else
+           array_file_name.shift(array_file_name.size / 2 + 1)
+         end
+  col3 = array_file_name
+  cols = [col1, col2, col3]
+  p cols
+
+  (0...col1.size).each do |j|
+    col = ''
+    (0...3).each do |i|
+      col += cols[i][j]&.ljust(col_size + 1) || ''
+    end
+    puts col
+  end
+end
