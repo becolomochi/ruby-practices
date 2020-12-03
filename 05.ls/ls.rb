@@ -3,7 +3,7 @@
 
 require 'optparse'
 require 'etc'
-require 'Date'
+require 'date'
 
 # ターミナルから値を得る
 opt = OptionParser.new
