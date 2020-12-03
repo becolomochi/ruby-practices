@@ -2,10 +2,11 @@
 require 'minitest/autorun'
 require './ls'
 
+# テスト動きません……
 class LsTest < Minitest::Test
   def test_type
-    assert_equal '-', convert_filetype('file')
-    assert_equal 'd', convert_filetype('directory')
+    assert_equal '-', type_short('file')
+    assert_equal 'd', type_short('directory')
   end
 
   def test_permission

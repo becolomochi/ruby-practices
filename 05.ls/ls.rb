@@ -46,24 +46,16 @@ class File
 
   # ftype からファイルタイプを変換
   def type_short
-    case type
-    when 'file'
-      '-'
-    when 'directory'
-      'd'
-    when 'characterSpecial'
-      'c'
-    when 'blockSpecial'
-      'b'
-    when 'fifo'
-      'p'
-    when 'link'
-      'l'
-    when 'socket'
-      's'
-    when 'unknown'
-      '?'
-    end
+    {
+      'file' => '-',
+      'directory' => 'd',
+      'characterSpecial' => 'c',
+      'blockSpecial' => 'b',
+      'fifo' => 'p',
+      'link' => 'l',
+      'socket' => 's',
+      'unknown' => '?'
+    }[type]
   end
 
   # mode からパーミッションを変換
@@ -89,7 +81,7 @@ class File
   end
 
   def type_and_permission
-    self.type_short + self.permission
+    type_short + permission
   end
 
   def date
@@ -160,7 +152,6 @@ else
          end
   col3 = array_file_name
   cols = [col1, col2, col3]
-  p cols
 
   (0...col1.size).each do |j|
     col = ''
