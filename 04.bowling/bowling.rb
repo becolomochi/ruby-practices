@@ -12,13 +12,7 @@ frames = []
 frame = []
 shots.each do |shot|
   if frames[9] # 10フレーム目の判定
-    if frames[9][1] # 2投目が存在する場合3投目を入れる
-      frames[9][2] = shot
-    elsif frames[9][0] # 1投目が存在する場合2投目を入れる
-      frames[9][1] = shot
-    else
-      frames[9][0] = shot
-    end
+    frames[9] << shot
   else
     frame << shot
     # スペアまたは2投目であれば新しいフレームを用意
