@@ -1,20 +1,25 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+def main
+  scores = create_score(ARGV[0])
+  game = separate_frame(scores)
+  puts count_point(game)
+end
+
 # スコアを取得する
 def create_score(score_text)
-  score_text.chars.map do |score|
+  score_text.each_char.map do |score|
     score == 'X' ? 10 : score.to_i
   end
 end
-scores = create_score(ARGV[0])
 
 # フレームごとに分ける
 def separate_frame(shots)
   frames = []
   frame = []
   shots.each do |shot|
-    if frames[9] # 10フレーム目の判定
+    if frames[9]
       frames[9] << shot
     else
       frame << shot
@@ -27,7 +32,6 @@ def separate_frame(shots)
   end
   frames
 end
-game = separate_frame(scores)
 
 # 得点を計算する
 def count_point(frames)
@@ -37,12 +41,12 @@ def count_point(frames)
 
     # 加算ポイントは9フレーム目まで
     if i < 9
-      if frame_score.size == 1 # ストライク
+      if strike?(frame_score)
         next_1st_shot = frames[i + 1][0]
         # 次フレームがストライクで2投目がない場合、さらに次のフレームの1投目を呼び出す
         next_2nd_shot = frames[i + 1][1] || frames[i + 2][0]
         point += next_1st_shot + next_2nd_shot
-      elsif frame_score.sum == 10 # スペア
+      elsif spare?(frame_score)
         # 次の1投の点数
         point += frames[i + 1][0]
       end
@@ -51,4 +55,12 @@ def count_point(frames)
   point
 end
 
-puts count_point(game)
+def spare?(frame_score)
+  !strike?(frame_score) && frame_score.sum == 10
+end
+
+def strike?(frame_score)
+  frame_score.size == 1
+end
+
+main
