@@ -5,43 +5,20 @@ require 'optparse'
 require 'etc'
 require 'date'
 
-# ターミナルから値を得る
-opt = OptionParser.new
-params = {}
-opt.on('-a') { |v| params[:a] = v }
-opt.on('-l') { |v| params[:l] = v }
-opt.on('-r') { |v| params[:r] = v }
-# 値を取り出す
-opt.parse!(ARGV)
+class FileData
+  attr_reader :file, :name, :type, :mode, :nlink, :user_name, :group_name, :size, :updated_time, :blocks
 
-# ディレクトリを決める
-directory = ARGV[0] || '.'
-Dir.chdir(directory)
-
-# ファイルの一覧を得る
-file_list = if params[:a]
-              Dir.glob('*', File::FNM_DOTMATCH)
-            else
-              Dir.glob('*')
-            end.sort
-
-# rオプションがあるなら逆順にする
-file_list = file_list.reverse if params[:r]
-
-# Fileクラスを定義
-class File
-  attr_reader :name, :type, :mode, :nlink, :user_name, :group_name, :size, :updated_time, :blocks
-
-  def initialize(name, type, mode, nlink, user_name, group_name, size, updated_time, blocks)
-    @name = name
-    @type = type
-    @mode = mode
-    @nlink = nlink
-    @user_name = user_name
-    @group_name = group_name
-    @size = size
-    @updated_time = updated_time
-    @blocks = blocks
+  def initialize(file)
+    fs = File::Stat.new(file)
+    @name = file
+    @type = fs.ftype
+    @mode = fs.mode
+    @nlink = fs.nlink
+    @user_name = Etc.getpwuid(fs.uid).name
+    @group_name = Etc.getgrgid(fs.gid).name
+    @size = fs.size
+    @updated_time = fs.mtime
+    @blocks = fs.blocks
   end
 
   # ftype からファイルタイプを変換
@@ -55,12 +32,12 @@ class File
       'link' => 'l',
       'socket' => 's',
       'unknown' => '?'
-    }[type]
+    }[@type]
   end
 
   # mode からパーミッションを変換
   def permission
-    mode.to_s(8)[-3..-1].chars.map do |x|
+    @mode.to_s(8)[-3..-1].chars.map do |x|
       case x
       when '7'
         'rwx'
@@ -85,27 +62,40 @@ class File
   end
 
   def date
-    if updated_time.year == Date.today
-      updated_time.strftime('%b %d %Y')
+    if @updated_time.year == Date.today
+      @updated_time.strftime('%b %d %Y')
     else
-      updated_time.strftime('%b %d %H:%M')
+      @updated_time.strftime('%b %d %H:%M')
     end
   end
 end
 
+# ターミナルから値を得る
+opt = OptionParser.new
+params = {}
+opt.on('-a') { |v| params[:a] = v }
+opt.on('-l') { |v| params[:l] = v }
+opt.on('-r') { |v| params[:r] = v }
+# 値を取り出す
+opt.parse!(ARGV)
+
+# ディレクトリを決める
+directory = ARGV[0] || '.'
+Dir.chdir(directory)
+
+# ファイルの一覧を得る
+file_list = if params[:a]
+              Dir.glob('*', File::FNM_DOTMATCH)
+            else
+              Dir.glob('*')
+            end.sort
+
+# rオプションがあるなら逆順にする
+file_list = file_list.reverse if params[:r]
+
 # ファイルのデータを作成する
 files = file_list.map do |file|
-  fs = File::Stat.new(file)
-  name = file
-  type = fs.ftype
-  mode = fs.mode
-  nlink = fs.nlink
-  user_name = Etc.getpwuid(fs.uid).name
-  group_name = Etc.getgrgid(fs.gid).name
-  size = fs.size
-  updated_time = fs.mtime
-  blocks = fs.blocks
-  File.new(name, type, mode, nlink, user_name, group_name, size, updated_time, blocks)
+  FileData.new(file)
 end
 
 # lオプション指定時はファイルのブロック数の合計を表示
