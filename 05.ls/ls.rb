@@ -98,44 +98,30 @@ files = file_list.map do |file|
   FileData.new(file)
 end
 
-# lオプション指定時はファイルのブロック数の合計を表示
-if params[:l]
-  total_blocks = files.inject(0) { |sum, file| sum + file.blocks }
-  puts "total #{total_blocks}"
+def total_blocks(files)
+  files.map(&:blocks).sum
 end
 
-unless params[:l]
-  # ファイル名だけの配列を返す
-  array_file_names = files.map(&:name)
-  # ファイル名の最大文字数
-  max_file_name_length = array_file_names.map(&:length).max
+def file_names(files)
+  files.map(&:name)
+end
+
+def column_width(file_names)
+  file_names.map(&:length).max + 1
 end
 
 # ファイルを出力
 if params[:l]
+  puts "total #{total_blocks(files)}"
   files.each do |file|
     puts "#{file.type_and_permission} #{file.nlink} #{file.user_name} #{file.group_name} #{file.size} #{file.date} #{file.name}"
   end
 else
   # 3カラム表示
-  col1 = if array_file_names.size == 3
-           array_file_names.shift(1)
-         else
-           array_file_names.shift(array_file_names.size / 3 + 1)
-         end
-  col2 = if array_file_names.size.even?
-           array_file_names.shift(array_file_names.size / 2)
-         else
-           array_file_names.shift(array_file_names.size / 2 + 1)
-         end
-  col3 = array_file_names
-  cols = [col1, col2, col3]
-
-  (0...col1.size).each do |j|
-    col = ''
-    (0...3).each do |i|
-      col += cols[i][j]&.ljust(max_file_name_length + 1) || ''
+  file_names(files).each_slice(3) do |file_name|
+    column = file_name.map do |name|
+      name&.ljust(column_width(file_names(files)))
     end
-    puts col
+    puts column.join
   end
 end
