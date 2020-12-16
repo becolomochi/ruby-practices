@@ -106,9 +106,9 @@ end
 
 unless params[:l]
   # ファイル名だけの配列を返す
-  array_file_name = files.map(&:name)
+  array_file_names = files.map(&:name)
   # ファイル名の最大文字数
-  max_file_name_length = array_file_name.map(&:length).max
+  max_file_name_length = array_file_names.map(&:length).max
 end
 
 # ファイルを出力
@@ -118,17 +118,17 @@ if params[:l]
   end
 else
   # 3カラム表示
-  col1 = if array_file_name.size == 3
-           array_file_name.shift(1)
+  col1 = if array_file_names.size == 3
+           array_file_names.shift(1)
          else
-           array_file_name.shift(array_file_name.size / 3 + 1)
+           array_file_names.shift(array_file_names.size / 3 + 1)
          end
-  col2 = if array_file_name.size.even?
-           array_file_name.shift(array_file_name.size / 2)
+  col2 = if array_file_names.size.even?
+           array_file_names.shift(array_file_names.size / 2)
          else
-           array_file_name.shift(array_file_name.size / 2 + 1)
+           array_file_names.shift(array_file_names.size / 2 + 1)
          end
-  col3 = array_file_name
+  col3 = array_file_names
   cols = [col1, col2, col3]
 
   (0...col1.size).each do |j|
