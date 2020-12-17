@@ -70,6 +70,18 @@ class FileData
   end
 end
 
+def total_blocks(files)
+  files.map(&:blocks).sum
+end
+
+def file_names(files)
+  files.map(&:name)
+end
+
+def column_width(file_names)
+  file_names.map(&:length).max + 1
+end
+
 # ターミナルから値を得る
 opt = OptionParser.new
 params = {}
@@ -98,17 +110,6 @@ files = file_list.map do |file|
   FileData.new(file)
 end
 
-def total_blocks(files)
-  files.map(&:blocks).sum
-end
-
-def file_names(files)
-  files.map(&:name)
-end
-
-def column_width(file_names)
-  file_names.map(&:length).max + 1
-end
 
 # ファイルを出力
 if params[:l]
