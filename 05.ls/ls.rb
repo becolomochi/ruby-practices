@@ -106,10 +106,7 @@ file_list = if params[:a]
 file_list = file_list.reverse if params[:r]
 
 # ファイルのデータを作成する
-files = file_list.map do |file|
-  FileData.new(file)
-end
-
+files = file_list.map { |file| FileData.new(file) }
 
 # ファイルを出力
 if params[:l]
