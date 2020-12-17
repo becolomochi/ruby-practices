@@ -32,12 +32,12 @@ class FileData
       'link' => 'l',
       'socket' => 's',
       'unknown' => '?'
-    }[@type]
+    }[type]
   end
 
   # mode からパーミッションを変換
   def permission
-    @mode.to_s(8)[-3..-1].chars.map do |x|
+    mode.to_s(8)[-3..-1].chars.map do |x|
       case x
       when '7'
         'rwx'
@@ -62,10 +62,10 @@ class FileData
   end
 
   def date
-    if @updated_time.year == Date.today
-      @updated_time.strftime('%b %d %Y')
+    if updated_time.year == Date.today
+      updated_time.strftime('%b %d %Y')
     else
-      @updated_time.strftime('%b %d %H:%M')
+      updated_time.strftime('%b %d %H:%M')
     end
   end
 end
