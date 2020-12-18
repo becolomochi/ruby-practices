@@ -2,8 +2,6 @@
 # frozen_string_literal: true
 
 require 'optparse'
-# require 'etc'
-# require 'date'
 
 def main
   hash = option_parser
@@ -11,28 +9,29 @@ def main
     files = hash[:targets].map { |target| WcFile.new(target) }
     files.each do |file|
       rows = create_rows(file, hash)
-      puts rows.map {|row| row.rjust(8)}.join
+      puts rows.map { |row| row }.join
     end
   else
     line = ''
-    while string = STDIN.gets
-      break if string.chomp == "exit"
+    while string = $stdin.gets
+      break if string.chomp == 'exit'
+
       line += string
     end
     file = WcStdin.new(line)
     rows = create_rows(file, hash)
-    puts rows.map {|row| row.rjust(8)}.join
+    puts rows.map { |row| row.rjust(8) }.join
   end
-  
+
   if hash[:targets].size > 1
     rows = []
     rows << files.map(&:count_line).sum.to_s.rjust(8)
-    if !hash[:option]
+    unless hash[:option]
       rows << files.map(&:count_word).sum.to_s.rjust(8)
       rows << files.map(&:count_byte).sum.to_s.rjust(8)
     end
     rows << ' total'
-    puts rows.map {|row| row}.join
+    puts rows.map { |row| row }.join
   end
 end
 
@@ -43,15 +42,15 @@ class WcStdin
     @file_read = line
     @name = ''
   end
-  
+
   def count_line
     file_read.count("\n")
   end
-  
+
   def count_word
     file_read.split(' ').length
   end
-  
+
   def count_byte
     file_read.bytesize
   end
@@ -64,28 +63,26 @@ class WcFile
     @file_read = File.open(file).read
     @name = file
   end
-  
+
   def count_line
     file_read.count("\n")
   end
-  
+
   def count_word
     file_read.split(' ').length
   end
-  
+
   def count_byte
     file_read.bytesize
   end
 end
 
-# ターミナルから値を得る
 def option_parser
   hash = {}
 
   opt = OptionParser.new
   params = {}
   opt.on('-l') { |v| params[:l] = v }
-  # 値を取り出す
   opt.parse!(ARGV)
 
   hash[:targets] = ARGV
@@ -95,17 +92,13 @@ end
 
 def create_rows(file, hash)
   rows = []
-  if hash[:option]
-    rows << file.count_line.to_s
-  else
-    rows << file.count_line.to_s
-    rows << file.count_word.to_s
-    rows << file.count_byte.to_s
+  rows << file.count_line.to_s.rjust(8)
+  unless hash[:option]
+    rows << file.count_word.to_s.rjust(8)
+    rows << file.count_byte.to_s.rjust(8)
   end
-  rows << " " + file.name
+  rows << " #{file.name}"
 end
 
 # ファイルを直接実行されたときだけ実行
-if __FILE__ == $0
-  main
-end
+main if __FILE__ == $PROGRAM_NAME
