@@ -7,8 +7,12 @@ require 'optparse'
 
 def main
   hash = option_parser
-  if hash[:target]
-    file = WcFile.new(hash[:target])
+  if hash[:targets].size > 0
+    files = hash[:targets].map { |target| WcFile.new(target) }
+    files.each do |file|
+      rows = create_rows(file, hash)
+      puts rows.map {|row| row.rjust(8)}.join
+    end
   else
     line = ''
     while string = STDIN.gets
@@ -16,9 +20,20 @@ def main
       line += string
     end
     file = WcStdin.new(line)
+    rows = create_rows(file, hash)
+    puts rows.map {|row| row.rjust(8)}.join
   end
-  rows = create_rows(file, hash)
-  puts rows.map {|row| row.rjust(8)}.join
+  
+  if hash[:targets].size > 1
+    rows = []
+    rows << files.map(&:count_line).sum.to_s.rjust(8)
+    if !hash[:option]
+      rows << files.map(&:count_word).sum.to_s.rjust(8)
+      rows << files.map(&:count_byte).sum.to_s.rjust(8)
+    end
+    rows << ' total'
+    puts rows.map {|row| row}.join
+  end
 end
 
 class WcStdin
@@ -73,7 +88,7 @@ def option_parser
   # 値を取り出す
   opt.parse!(ARGV)
 
-  hash[:target] = ARGV[0]
+  hash[:targets] = ARGV
   hash[:option] = params[:l]
   hash
 end
