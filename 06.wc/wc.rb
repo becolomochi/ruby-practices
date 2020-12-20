@@ -5,7 +5,7 @@ require 'optparse'
 
 def main
   hash = option_parser
-  if hash[:targets].size > 0
+  if hash[:targets].size.positive?
     files = hash[:targets].map { |target| WcFile.new(target) }
     files.each do |file|
       rows = create_rows(file, hash)
@@ -20,21 +20,13 @@ def main
     end
     file = WcStdin.new(line)
     rows = create_rows(file, hash)
-    puts rows.map { |row| row.rjust(8) }.join
-  end
-
-  if hash[:targets].size > 1
-    rows = []
-    rows << files.map(&:count_line).sum.to_s.rjust(8)
-    unless hash[:option]
-      rows << files.map(&:count_word).sum.to_s.rjust(8)
-      rows << files.map(&:count_byte).sum.to_s.rjust(8)
-    end
-    rows << ' total'
     puts rows.map { |row| row }.join
   end
+
+  puts total_count(files, hash) if hash[:targets].size > 1
 end
 
+# 行数・単語数・バイト数の計算
 module Count
   def count_line
     file_read.count("\n")
@@ -49,6 +41,7 @@ module Count
   end
 end
 
+# 標準入力を受け付けるクラス
 class WcStdin
   attr_reader :file_read, :name
 
@@ -60,6 +53,7 @@ class WcStdin
   include Count
 end
 
+# ファイルを受け付けるクラス
 class WcFile
   attr_reader :file_read, :name
 
@@ -71,6 +65,7 @@ class WcFile
   include Count
 end
 
+# ターミナルからの値を受け付ける
 def option_parser
   hash = {}
 
@@ -84,14 +79,32 @@ def option_parser
   hash
 end
 
+# 表示の整形
+def to_s_right(number)
+  number.to_s.rjust(8)
+end
+
+# 出力
 def create_rows(file, hash)
   rows = []
-  rows << file.count_line.to_s.rjust(8)
+  rows << to_s_right(file.count_line)
   unless hash[:option]
-    rows << file.count_word.to_s.rjust(8)
-    rows << file.count_byte.to_s.rjust(8)
+    rows << to_s_right(file.count_word)
+    rows << to_s_right(file.count_byte)
   end
   rows << " #{file.name}"
+end
+
+# ファイルが複数ある場合の合計数
+def total_count(files, hash)
+  rows = []
+  rows << to_s_right(files.map(&:count_line).sum)
+  unless hash[:option]
+    rows << to_s_right(files.map(&:count_word).sum)
+    rows << to_s_right(files.map(&:count_byte).sum)
+  end
+  rows << ' total'
+  rows.map { |row| row }.join
 end
 
 # ファイルを直接実行されたときだけ実行
