@@ -35,14 +35,7 @@ def main
   end
 end
 
-class WcStdin
-  attr_reader :file_read, :name
-
-  def initialize(line)
-    @file_read = line
-    @name = ''
-  end
-
+module Count
   def count_line
     file_read.count("\n")
   end
@@ -56,6 +49,17 @@ class WcStdin
   end
 end
 
+class WcStdin
+  attr_reader :file_read, :name
+
+  def initialize(line)
+    @file_read = line
+    @name = ''
+  end
+
+  include Count
+end
+
 class WcFile
   attr_reader :file_read, :name
 
@@ -64,17 +68,7 @@ class WcFile
     @name = file
   end
 
-  def count_line
-    file_read.count("\n")
-  end
-
-  def count_word
-    file_read.split(' ').length
-  end
-
-  def count_byte
-    file_read.bytesize
-  end
+  include Count
 end
 
 def option_parser
