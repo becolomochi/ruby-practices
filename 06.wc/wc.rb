@@ -61,13 +61,7 @@ def output_wc_file(hash)
 end
 
 def output_wc_stdin(hash)
-  line = ''
-  while string = $stdin.gets
-    break if string.chomp == 'exit'
-
-    line += string
-  end
-  file = WcStdin.new(line)
+  file = WcStdin.new($stdin.gets(''))
   rows = create_rows(file, hash)
   puts rows.map { |row| row }.join
 end
