@@ -6,24 +6,10 @@ require 'optparse'
 def main
   hash = option_parser
   if hash[:targets].size.positive?
-    files = hash[:targets].map { |target| WcFile.new(target) }
-    files.each do |file|
-      rows = create_rows(file, hash)
-      puts rows.map { |row| row }.join
-    end
+    output_wc_file(hash)
   else
-    line = ''
-    while string = $stdin.gets
-      break if string.chomp == 'exit'
-
-      line += string
-    end
-    file = WcStdin.new(line)
-    rows = create_rows(file, hash)
-    puts rows.map { |row| row }.join
+    output_wc_stdin(hash)
   end
-
-  puts total_count(files, hash) if hash[:targets].size > 1
 end
 
 # 行数・単語数・バイト数の計算
@@ -63,6 +49,27 @@ class WcFile
   end
 
   include Count
+end
+
+def output_wc_file(hash)
+  files = hash[:targets].map { |target| WcFile.new(target) }
+  files.each do |file|
+    rows = create_rows(file, hash)
+    puts rows.map { |row| row }.join
+  end
+  puts total_count(files, hash) if hash[:targets].size > 1
+end
+
+def output_wc_stdin(hash)
+  line = ''
+  while string = $stdin.gets
+    break if string.chomp == 'exit'
+
+    line += string
+  end
+  file = WcStdin.new(line)
+  rows = create_rows(file, hash)
+  puts rows.map { |row| row }.join
 end
 
 # ターミナルからの値を受け付ける
