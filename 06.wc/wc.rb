@@ -12,47 +12,31 @@ def main
   end
 end
 
-# 行数・単語数・バイト数の計算
-module Count
+# ファイルと標準入力を受け付けるクラス
+class Wc
+  attr_reader :target, :name
+
+  def initialize(target, name)
+    @target = target
+    @name = name
+  end
+
   def count_line
-    file_read.count("\n")
+    target.count("\n")
   end
 
   def count_word
-    file_read.split(' ').length
+    target.split(' ').length
   end
 
   def count_byte
-    file_read.bytesize
+    target.bytesize
   end
 end
 
-# 標準入力を受け付けるクラス
-class WcStdin
-  attr_reader :file_read, :name
-
-  def initialize(line)
-    @file_read = line
-    @name = ''
-  end
-
-  include Count
-end
-
-# ファイルを受け付けるクラス
-class WcFile
-  attr_reader :file_read, :name
-
-  def initialize(file)
-    @file_read = File.open(file).read
-    @name = file
-  end
-
-  include Count
-end
-
+# ファイルを受け付けたときの出力
 def output_wc_file(hash)
-  files = hash[:targets].map { |target| WcFile.new(target) }
+  files = hash[:targets].map { |target| Wc.new(File.open(target).read, target) }
   files.each do |file|
     rows = create_rows(file, hash)
     puts rows.map { |row| row }.join
@@ -60,8 +44,9 @@ def output_wc_file(hash)
   puts total_count(files, hash) if hash[:targets].size > 1
 end
 
+# 標準入力を受け付けたときの出力
 def output_wc_stdin(hash)
-  file = WcStdin.new($stdin.gets(''))
+  file = Wc.new($stdin.gets(''), '')
   rows = create_rows(file, hash)
   puts rows.map { |row| row }.join
 end
