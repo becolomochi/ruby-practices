@@ -39,7 +39,7 @@ def output_wc_file(hash)
   files = hash[:targets].map { |target| Wc.new(File.open(target).read, target) }
   files.each do |file|
     rows = create_rows(file, hash)
-    puts rows.map { |row| row }.join
+    puts rows.join
   end
   puts total_count(files, hash) if hash[:targets].size > 1
 end
@@ -48,7 +48,7 @@ end
 def output_wc_stdin(hash)
   file = Wc.new($stdin.gets(''), '')
   rows = create_rows(file, hash)
-  puts rows.map { |row| row }.join
+  puts rows.join
 end
 
 # ターミナルからの値を受け付ける
@@ -90,7 +90,7 @@ def total_count(files, hash)
     rows << to_s_right(files.map(&:count_byte).sum)
   end
   rows << ' total'
-  rows.map { |row| row }.join
+  rows.join
 end
 
 # ファイルを直接実行されたときだけ実行
