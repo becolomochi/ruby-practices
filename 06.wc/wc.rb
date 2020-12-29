@@ -84,10 +84,10 @@ end
 # ファイルが複数ある場合の合計数
 def total_count(files, hash)
   rows = []
-  rows << to_s_right(files.map(&:count_line).sum)
+  rows << to_s_right(files.sum(&:count_line))
   unless hash[:option]
-    rows << to_s_right(files.map(&:count_word).sum)
-    rows << to_s_right(files.map(&:count_byte).sum)
+    rows << to_s_right(files.sum(&:count_word))
+    rows << to_s_right(files.sum(&:count_byte))
   end
   rows << ' total'
   rows.join
